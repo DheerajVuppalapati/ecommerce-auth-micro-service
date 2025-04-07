@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+venv/
+instance/
+*.db
+*.sqlite3
+.env
+
+
+# Alembic cache 
+alembic/__pycache__/
+
+# IDE/editor configs
+.vscode/
+.idea/
