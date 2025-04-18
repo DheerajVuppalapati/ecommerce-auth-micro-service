@@ -32,6 +32,7 @@ class User(Base):
     modified_on = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
     password_hash = Column(String, nullable=False)
 
+    #relationships
     role = relationship("Role", back_populates="users")
     addresses = relationship("Address", back_populates="user")
     auth_tokens = relationship("AuthToken", back_populates="user")

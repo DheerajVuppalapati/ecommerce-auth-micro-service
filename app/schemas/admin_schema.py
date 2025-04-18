@@ -9,7 +9,7 @@ class RegisterAdminRequest(BaseModel):
     username: str
     email: str
     mobile_number: str
-    role_id: 2
+    role_id: int
     password_hash: str
 
 class AdminResponse(BaseModel):
