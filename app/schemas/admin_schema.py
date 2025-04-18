@@ -3,6 +3,14 @@ from uuid import UUID
 
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
 class RegisterAdminRequest(BaseModel):
     first_name: str
     last_name: str

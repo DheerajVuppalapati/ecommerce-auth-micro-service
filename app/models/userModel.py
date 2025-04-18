@@ -15,9 +15,8 @@ from app.cores.database import Base
 class Role(Base):
     __tablename__ = "roles"
     role_id = Column(Integer, primary_key=True, index=True)
-    role_name = Column(SqlEnum(RoleEnum, name="role_enum"), nullable=False)
+    role_name = Column(SqlEnum(RoleEnum, name="role_enum"), nullable=False,default= RoleEnum.user)
     users = relationship("User", back_populates="role")
-
 class User(Base):
     __tablename__ = "users"
     user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
