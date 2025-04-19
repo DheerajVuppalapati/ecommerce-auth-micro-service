@@ -17,13 +17,13 @@ from app.utils.auth_helpers import verify_password,hash_password,create_access_t
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 env_path = Path(__file__).resolve().parent.parent / ".env"
 
 load_dotenv(dotenv_path=env_path)
 
-@router.post('/register-super-admin')
+@router.post('/api/auth/register-admin')
 async def register_admin(
     request: Annotated[RegisterAdminRequest,Form()],
     db: Annotated[Session,Depends(get_db)]
@@ -71,7 +71,7 @@ async def register_admin(
         raise HTTPException(status_code=500,detail=f"An error occured: {str(e)}")
     
 
-@router.post('/token')
+@router.post('/api/auth/token')
 async def login_for_access_token(
     db: Annotated[Session, Depends(get_db)],
     request: OAuth2PasswordRequestForm = Depends()
@@ -96,7 +96,9 @@ async def login_for_access_token(
             access_token = access_token,
             token_type = "bearer"
         )
-
+    except HTTPException as e:
+        # This will handle any HTTPException (like 401, 500) we throw explicitly
+        raise e
     except Exception as e:
        
         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
