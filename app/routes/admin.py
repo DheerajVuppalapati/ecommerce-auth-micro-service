@@ -1,36 +1,30 @@
-from dotenv import load_dotenv
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import  timedelta 
 from typing import Annotated
+from pathlib import Path
+import os
+from dotenv import load_dotenv
 
-import jwt
 from fastapi import APIRouter, Form, Depends,HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from jwt.exceptions import InvalidTokenError
-from passlib.context import CryptContext
+# from jwt.exceptions import InvalidTokenError
 
-from app.schemas.admin_schema import RegisterAdminRequest,AdminResponse
+
+from app.schemas.admin_schema import RegisterAdminRequest,AdminResponse,Token
 from app.utils.dbdependency import get_db
 from app.models.userModel import User
-
-load_dotenv()
+from app.utils.auth_helpers import verify_password,hash_password,create_access_token,authenticate_user
 
 router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+env_path = Path(__file__).resolve().parent.parent / ".env"
 
-def verify_password(password,hashed_password):
-    return pwd_context.verify(password,hashed_password)
+load_dotenv(dotenv_path=env_path)
 
-def hash_password(password):
-    return pwd_context.hash(password)
-
-
-@router.post('/register-admin')
-def register_admin(
+@router.post('/register-super-admin')
+async def register_admin(
     request: Annotated[RegisterAdminRequest,Form()],
     db: Annotated[Session,Depends(get_db)]
 ) -> AdminResponse:
@@ -76,7 +70,36 @@ def register_admin(
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"An error occured: {str(e)}")
     
-  
+
+@router.post('/token')
+async def login_for_access_token(
+    db: Annotated[Session, Depends(get_db)],
+    request: OAuth2PasswordRequestForm = Depends()
+) -> Token:
+    try:
+        user = authenticate_user(db, request.username, request.password)
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect username or password"
+            )
+
+        # Fix: get int value from env var
+        expire_minutes = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
+        access_token = create_access_token(
+            data={"sub": user.username},
+            expire_delta=timedelta(minutes=expire_minutes)
+        )
+
+        return Token(
+            access_token = access_token,
+            token_type = "bearer"
+        )
+
+    except Exception as e:
+       
+        raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 
 @router.get('/test')

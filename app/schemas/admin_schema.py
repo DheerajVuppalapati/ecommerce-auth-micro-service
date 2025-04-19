@@ -41,3 +41,5 @@ class UserResponse(BaseModel):
     email: EmailStr
     role_name: str
     status: str
+
+
